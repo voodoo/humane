@@ -99,8 +99,9 @@ export function DayShiftPanel({
               ).
             </p>
             <p className="mt-2 text-xs text-muted">
-              This is a demo — nothing was sent to a server. This browser will
-              remember your details next time.
+              This is a demo — nothing was sent to a server. Sign out and open
+              the email link again with the same address to return with these
+              details.
             </p>
           </div>
           <button

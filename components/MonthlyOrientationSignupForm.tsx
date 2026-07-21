@@ -3,26 +3,60 @@
 import { useEffect, useState } from "react";
 import type { DemoOrientationSignup } from "@/lib/types";
 import {
+  clearSession,
+  displayNameFor,
+  loadSession,
   loadVolunteerProfile,
   profileToOrientationSignup,
   saveVolunteerProfile,
+  type VolunteerSession,
 } from "@/lib/local-volunteer";
-import { demoOrientationSignup } from "@/lib/mock-data";
+import { EmailSignIn } from "./EmailSignIn";
 
 type Props = {
   monthLabel: string;
 };
 
 export function MonthlyOrientationSignupForm({ monthLabel }: Props) {
-  const [form, setForm] = useState<DemoOrientationSignup>(demoOrientationSignup);
+  const [ready, setReady] = useState(false);
+  const [session, setSession] = useState<VolunteerSession | null>(null);
+  const [form, setForm] = useState<DemoOrientationSignup>({
+    name: "",
+    email: "",
+    phone: "",
+    emergencyContact: "",
+    howHeard: "Friend / family",
+  });
   const [welcomeName, setWelcomeName] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
+    const storedSession = loadSession();
     const stored = loadVolunteerProfile();
-    if (!stored) return;
-    setForm(profileToOrientationSignup(stored, demoOrientationSignup));
-    setWelcomeName(stored.name);
+
+    const emptyFallback: DemoOrientationSignup = {
+      name: "",
+      email: storedSession?.email ?? "",
+      phone: "",
+      emergencyContact: "",
+      howHeard: "Friend / family",
+    };
+    const profile =
+      stored &&
+      (!storedSession ||
+        stored.email.trim().toLowerCase() ===
+          storedSession.email.trim().toLowerCase())
+        ? { ...stored, email: storedSession?.email ?? stored.email }
+        : storedSession
+          ? { name: "", email: storedSession.email, phone: "" }
+          : null;
+
+    queueMicrotask(() => {
+      setSession(storedSession);
+      setForm(profileToOrientationSignup(profile, emptyFallback));
+      setWelcomeName(displayNameFor(profile, storedSession));
+      setReady(true);
+    });
   }, []);
 
   function handleSubmit(e: React.FormEvent) {
@@ -34,7 +68,23 @@ export function MonthlyOrientationSignupForm({ monthLabel }: Props) {
       emergencyContact: form.emergencyContact,
       howHeard: form.howHeard,
     });
+    setWelcomeName(form.name || form.email);
     setSubmitted(true);
+  }
+
+  if (!ready) {
+    return <p className="text-sm text-muted">Loading…</p>;
+  }
+
+  if (!session) {
+    return (
+      <EmailSignIn
+        embedded
+        title="Sign in with email"
+        subtitle="Enter your email — no password. You’ll get a demo message with a link back to orientation signup."
+        returnPath="/orientation/signup"
+      />
+    );
   }
 
   if (submitted) {
@@ -44,7 +94,7 @@ export function MonthlyOrientationSignupForm({ monthLabel }: Props) {
         <p className="mt-2 text-sm text-foreground">
           Thanks for registering for <strong>{monthLabel}</strong> volunteer
           orientation. This is a demo — nothing was sent to a server. This
-          browser will remember your details next time.
+          browser will remember your details next time you open the email link.
         </p>
         <button
           type="button"
@@ -63,9 +113,24 @@ export function MonthlyOrientationSignupForm({ monthLabel }: Props) {
       className="flex flex-col gap-4 rounded-lg border border-border bg-background-elevated p-5 shadow-sm sm:p-6"
       aria-label="Monthly orientation signup"
     >
-      {welcomeName ? (
-        <p className="text-sm text-accent-deep">Welcome back, {welcomeName}</p>
-      ) : null}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {welcomeName ? (
+          <p className="text-sm text-accent-deep">Signed in as {welcomeName}</p>
+        ) : (
+          <span />
+        )}
+        <button
+          type="button"
+          onClick={() => {
+            clearSession();
+            setSession(null);
+            setWelcomeName(null);
+          }}
+          className="text-sm font-medium text-muted transition hover:text-accent-deep"
+        >
+          Sign out
+        </button>
+      </div>
 
       <div className="rounded-md border border-border bg-accent-soft/50 p-3 text-sm">
         <p className="font-semibold text-accent-deep">

@@ -1,13 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import type { PanelPhase, Shift } from "@/lib/types";
+import { useEffect, useMemo, useState } from "react";
+import type { DemoVolunteer, PanelPhase, Shift } from "@/lib/types";
 import {
   addMonths,
   countByDate,
   shiftsOnDate,
   startOfMonth,
 } from "@/lib/calendar";
+import {
+  loadVolunteerProfile,
+  profileToDemoVolunteer,
+  saveVolunteerProfile,
+} from "@/lib/local-volunteer";
 import { demoVolunteer, getShiftsForMonth } from "@/lib/mock-data";
 import { MonthCalendar } from "./MonthCalendar";
 import { DayShiftPanel } from "./DayShiftPanel";
@@ -18,6 +23,15 @@ export function VolunteerApp() {
   const [selectedISO, setSelectedISO] = useState<string | null>(null);
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
   const [phase, setPhase] = useState<PanelPhase>("day");
+  const [volunteer, setVolunteer] = useState<DemoVolunteer>(demoVolunteer);
+  const [welcomeName, setWelcomeName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const stored = loadVolunteerProfile();
+    if (!stored) return;
+    setVolunteer(profileToDemoVolunteer(stored, demoVolunteer));
+    setWelcomeName(stored.name);
+  }, []);
 
   const shifts = useMemo(() => getShiftsForMonth(month), [month]);
   const counts = useMemo(() => countByDate(shifts), [shifts]);
@@ -36,7 +50,9 @@ export function VolunteerApp() {
     setPhase("signup");
   }
 
-  function handleSubmitSignup() {
+  function handleSubmitSignup(form: DemoVolunteer) {
+    saveVolunteerProfile(form);
+    setVolunteer(form);
     setPhase("success");
   }
 
@@ -67,6 +83,11 @@ export function VolunteerApp() {
         <p className="mt-2 max-w-md text-base text-muted sm:text-lg">
           Volunteer shifts
         </p>
+        {welcomeName ? (
+          <p className="mt-1 text-sm text-accent-deep">
+            Welcome back, {welcomeName}
+          </p>
+        ) : null}
       </header>
 
       <div className="grid flex-1 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(300px,0.95fr)] lg:items-start">
@@ -83,7 +104,7 @@ export function VolunteerApp() {
           selectedISO={selectedISO}
           shiftsForDay={shiftsForDay}
           selectedShift={selectedShift}
-          demoVolunteer={demoVolunteer}
+          demoVolunteer={volunteer}
           onSelectShift={handleSelectShift}
           onSubmitSignup={handleSubmitSignup}
           onCancelSignup={handleCancelSignup}

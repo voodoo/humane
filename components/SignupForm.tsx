@@ -7,7 +7,7 @@ import { formatTimeRange } from "@/lib/calendar";
 type Props = {
   shift: Shift;
   demoVolunteer: DemoVolunteer;
-  onSubmit: () => void;
+  onSubmit: (volunteer: DemoVolunteer) => void;
   onCancel?: () => void;
   showCancel?: boolean;
 };
@@ -27,7 +27,7 @@ export function SignupForm({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    onSubmit();
+    onSubmit(form);
   }
 
   return (
@@ -88,7 +88,7 @@ export function SignupForm({
       </label>
 
       <p className="text-xs text-muted">
-        Demo form — fields are prefilled with mock volunteer data.
+        Details stay on this device only — nothing is sent to a server.
       </p>
 
       <div className="mt-1 flex flex-wrap gap-2">

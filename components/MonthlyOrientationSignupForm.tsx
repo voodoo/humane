@@ -1,6 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { DemoOrientationSignup } from "@/lib/types";
+import {
+  loadVolunteerProfile,
+  profileToOrientationSignup,
+  saveVolunteerProfile,
+} from "@/lib/local-volunteer";
 import { demoOrientationSignup } from "@/lib/mock-data";
 
 type Props = {
@@ -8,15 +14,26 @@ type Props = {
 };
 
 export function MonthlyOrientationSignupForm({ monthLabel }: Props) {
-  const [form, setForm] = useState(demoOrientationSignup);
+  const [form, setForm] = useState<DemoOrientationSignup>(demoOrientationSignup);
+  const [welcomeName, setWelcomeName] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    setForm(demoOrientationSignup);
+    const stored = loadVolunteerProfile();
+    if (!stored) return;
+    setForm(profileToOrientationSignup(stored, demoOrientationSignup));
+    setWelcomeName(stored.name);
   }, []);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    saveVolunteerProfile({
+      name: form.name,
+      email: form.email,
+      phone: form.phone,
+      emergencyContact: form.emergencyContact,
+      howHeard: form.howHeard,
+    });
     setSubmitted(true);
   }
 
@@ -26,7 +43,8 @@ export function MonthlyOrientationSignupForm({ monthLabel }: Props) {
         <p className="font-display text-2xl text-accent-deep">You’re signed up</p>
         <p className="mt-2 text-sm text-foreground">
           Thanks for registering for <strong>{monthLabel}</strong> volunteer
-          orientation. This is a demo — your signup was not saved.
+          orientation. This is a demo — nothing was sent to a server. This
+          browser will remember your details next time.
         </p>
         <button
           type="button"
@@ -45,6 +63,10 @@ export function MonthlyOrientationSignupForm({ monthLabel }: Props) {
       className="flex flex-col gap-4 rounded-lg border border-border bg-background-elevated p-5 shadow-sm sm:p-6"
       aria-label="Monthly orientation signup"
     >
+      {welcomeName ? (
+        <p className="text-sm text-accent-deep">Welcome back, {welcomeName}</p>
+      ) : null}
+
       <div className="rounded-md border border-border bg-accent-soft/50 p-3 text-sm">
         <p className="font-semibold text-accent-deep">
           Volunteer orientation · {monthLabel}
@@ -112,7 +134,7 @@ export function MonthlyOrientationSignupForm({ monthLabel }: Props) {
       </label>
 
       <p className="text-xs text-muted">
-        Demo form — fields are prefilled with mock data.
+        Details stay on this device only — nothing is sent to a server.
       </p>
 
       <button

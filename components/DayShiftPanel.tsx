@@ -11,7 +11,7 @@ type Props = {
   selectedShift: Shift | null;
   demoVolunteer: DemoVolunteer;
   onSelectShift: (shift: Shift) => void;
-  onSubmitSignup: () => void;
+  onSubmitSignup: (volunteer: DemoVolunteer) => void;
   onCancelSignup: () => void;
   onDone: () => void;
 };
@@ -99,7 +99,8 @@ export function DayShiftPanel({
               ).
             </p>
             <p className="mt-2 text-xs text-muted">
-              This is a demo — your signup was not saved.
+              This is a demo — nothing was sent to a server. This browser will
+              remember your details next time.
             </p>
           </div>
           <button

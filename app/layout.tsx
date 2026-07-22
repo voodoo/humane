@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Source_Sans_3 } from "next/font/google";
+import { THEME_BOOTSTRAP_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -33,7 +34,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans">
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem("humane-theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}`,
+            __html: THEME_BOOTSTRAP_SCRIPT,
           }}
         />
         {children}

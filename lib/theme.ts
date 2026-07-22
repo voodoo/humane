@@ -23,6 +23,9 @@ export function isThemeId(value: string | null): value is ThemeId {
   return value !== null && THEME_IDS.has(value);
 }
 
+/** Inline bootstrap: apply stored theme before paint, only if it is a known id. */
+export const THEME_BOOTSTRAP_SCRIPT = `try{var k=${JSON.stringify(THEME_STORAGE_KEY)};var t=localStorage.getItem(k);var ids=${JSON.stringify(THEMES.map((theme) => theme.id))};if(t&&ids.indexOf(t)!==-1)document.documentElement.dataset.theme=t;}catch(e){}`;
+
 export function loadTheme(): ThemeId {
   if (typeof window === "undefined") return "spring";
   try {

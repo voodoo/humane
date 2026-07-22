@@ -17,6 +17,7 @@ import {
   saveVolunteerProfile,
   type VolunteerSession,
 } from "@/lib/local-volunteer";
+import { addAdminSignupRecord } from "@/lib/local-admin-signups";
 import { getShiftsForMonth } from "@/lib/mock-data";
 import { MonthCalendar } from "./MonthCalendar";
 import { DayShiftPanel } from "./DayShiftPanel";
@@ -85,6 +86,17 @@ export function VolunteerApp() {
 
   function handleSubmitSignup(form: DemoVolunteer) {
     saveVolunteerProfile(form);
+    if (selectedShift) {
+      addAdminSignupRecord({
+        email: form.email,
+        name: form.name,
+        phone: form.phone,
+        notes: form.notes,
+        source: "shift-signup",
+        form: selectedShift.role,
+        date: selectedShift.date,
+      });
+    }
     setVolunteer(form);
     setWelcomeName(form.name || form.email);
     setPhase("success");

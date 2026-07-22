@@ -11,6 +11,7 @@ import {
   saveVolunteerProfile,
   type VolunteerSession,
 } from "@/lib/local-volunteer";
+import { addAdminSignupRecord } from "@/lib/local-admin-signups";
 import { EmailSignIn } from "./EmailSignIn";
 
 type Props = {
@@ -67,6 +68,15 @@ export function MonthlyOrientationSignupForm({ monthLabel }: Props) {
       phone: form.phone,
       emergencyContact: form.emergencyContact,
       howHeard: form.howHeard,
+    });
+    addAdminSignupRecord({
+      email: form.email,
+      name: form.name,
+      phone: form.phone,
+      notes: `Emergency contact: ${form.emergencyContact || "n/a"}; How heard: ${form.howHeard || "n/a"}`,
+      source: "orientation-signup",
+      form: "Monthly orientation",
+      date: new Date().toISOString().slice(0, 10),
     });
     setWelcomeName(form.name || form.email);
     setSubmitted(true);

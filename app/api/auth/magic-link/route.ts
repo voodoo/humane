@@ -73,10 +73,16 @@ export async function POST(request: Request) {
   });
 
   if (error) {
-    return Response.json(
-      { error: "Unable to send magic link email right now. Please try again." },
-      { status: 502 },
-    );
+    console.error("Resend magic-link send failed:", {
+      name: error.name,
+      message: error.message,
+      from: config.fromEmail,
+    });
+    const detail =
+      typeof error.message === "string" && error.message.trim().length > 0
+        ? error.message.trim()
+        : "Unable to send magic link email right now. Please try again.";
+    return Response.json({ error: detail }, { status: 502 });
   }
 
   // Also return the verify URL so the client can show an in-app copy of the email.

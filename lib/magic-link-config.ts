@@ -7,7 +7,8 @@ type ServerMagicLinkConfig = {
 function readEnv(name: "RESEND_API_KEY" | "RESEND_FROM_EMAIL" | "MAGIC_LINK_SECRET"): string | null {
   const value = process.env[name];
   if (typeof value !== "string") return null;
-  const trimmed = value.trim();
+  // Vercel UI sometimes stores values with surrounding quotes.
+  const trimmed = value.trim().replace(/^(['"])(.*)\1$/, "$2").trim();
   return trimmed.length > 0 ? trimmed : null;
 }
 

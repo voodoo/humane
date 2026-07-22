@@ -74,9 +74,15 @@ export function AdminSignupRecords() {
     );
   }, [filteredRecords]);
 
+  function exitEditing() {
+    setEditingId(null);
+    setDraft(null);
+  }
+
   useEffect(() => {
     if (monthFilter !== "all" && months.includes(monthFilter)) return;
     if (monthFilter === "all") return;
+    exitEditing();
     setMonthFilter("all");
   }, [monthFilter, months]);
 
@@ -94,8 +100,7 @@ export function AdminSignupRecords() {
   }
 
   function cancelEditing() {
-    setEditingId(null);
-    setDraft(null);
+    exitEditing();
   }
 
   function saveEditing() {
@@ -105,8 +110,7 @@ export function AdminSignupRecords() {
     setRecords((prev) =>
       prev.map((record) => (record.id === editingId ? updated : record)),
     );
-    setEditingId(null);
-    setDraft(null);
+    exitEditing();
   }
 
   if (!ready) {
@@ -162,7 +166,13 @@ export function AdminSignupRecords() {
             <select
               className="rounded-md border border-border bg-background px-3 py-2 outline-none focus:border-accent"
               value={monthFilter}
-              onChange={(event) => setMonthFilter(event.target.value)}
+              onChange={(event) => {
+                const nextMonth = event.target.value;
+                if (nextMonth !== monthFilter) {
+                  exitEditing();
+                }
+                setMonthFilter(nextMonth);
+              }}
             >
               <option value="all">All months</option>
               {months.map((month) => (

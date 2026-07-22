@@ -125,7 +125,7 @@ export function VolunteerApp() {
     return (
       <EmailSignIn
         title="Sign in with email"
-        subtitle="Enter your email — no password. You’ll get a demo message with a link back to volunteer shifts."
+        subtitle="Enter your email — no password. We’ll send a secure link back to volunteer shifts."
         returnPath="/"
       />
     );

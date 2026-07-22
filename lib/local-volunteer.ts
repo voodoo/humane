@@ -148,27 +148,8 @@ export type VerifyMagicLinkResult =
   | { ok: true; email: string }
   | { ok: false; error: string };
 
-export function verifyMagicLink(
-  email: string | null,
-  token: string | null,
-): VerifyMagicLinkResult {
-  if (!email || !token) {
-    return { ok: false, error: "This sign-in link is missing details." };
-  }
-
-  const pending = loadPendingMagicLink();
-  if (!pending) {
-    return {
-      ok: false,
-      error: "This sign-in link expired or was already used. Request a new one.",
-    };
-  }
-
+export function completeMagicLinkSignIn(email: string): void {
   const normalized = email.trim().toLowerCase();
-  if (pending.email !== normalized || pending.token !== token) {
-    return { ok: false, error: "This sign-in link is not valid." };
-  }
-
   writeJson(SESSION_KEY, { email: normalized } satisfies VolunteerSession);
 
   const existing = loadVolunteerProfile();
@@ -193,7 +174,30 @@ export function verifyMagicLink(
       phone: "",
     });
   }
+}
 
+export function verifyMagicLink(
+  email: string | null,
+  token: string | null,
+): VerifyMagicLinkResult {
+  if (!email || !token) {
+    return { ok: false, error: "This sign-in link is missing details." };
+  }
+
+  const pending = loadPendingMagicLink();
+  if (!pending) {
+    return {
+      ok: false,
+      error: "This sign-in link expired or was already used. Request a new one.",
+    };
+  }
+
+  const normalized = email.trim().toLowerCase();
+  if (pending.email !== normalized || pending.token !== token) {
+    return { ok: false, error: "This sign-in link is not valid." };
+  }
+
+  completeMagicLinkSignIn(normalized);
   clearPendingMagicLink();
   return { ok: true, email: normalized };
 }

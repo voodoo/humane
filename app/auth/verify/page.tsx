@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { verifyMagicLink } from "@/lib/local-volunteer";
+import { completeMagicLinkSignIn, verifyMagicLink } from "@/lib/local-volunteer";
 
 function VerifyInner() {
   const router = useRouter();
@@ -15,19 +15,63 @@ function VerifyInner() {
     if (ran.current) return;
     ran.current = true;
 
-    const email = searchParams.get("email");
-    const token = searchParams.get("token");
-    const next = searchParams.get("next") || "/";
-    const safeNext =
-      next.startsWith("/") && !next.startsWith("//") ? next : "/";
+    const run = async () => {
+      const email = searchParams.get("email");
+      const token = searchParams.get("token");
+      const next = searchParams.get("next") || "/";
+      const safeNext =
+        next.startsWith("/") && !next.startsWith("//") ? next : "/";
 
-    const result = verifyMagicLink(email, token);
-    if (!result.ok) {
-      queueMicrotask(() => setError(result.error));
-      return;
-    }
+      if (!email || !token) {
+        queueMicrotask(() => setError("This sign-in link is missing details."));
+        return;
+      }
 
-    router.replace(safeNext);
+      try {
+        const response = await fetch("/api/auth/magic-link/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, token }),
+        });
+        const payload = (await response.json()) as {
+          email?: string;
+          error?: string;
+        };
+
+        if (response.ok && typeof payload.email === "string") {
+          completeMagicLinkSignIn(payload.email);
+          router.replace(safeNext);
+          return;
+        }
+
+        if (process.env.NODE_ENV === "development") {
+          const fallback = verifyMagicLink(email, token);
+          if (fallback.ok) {
+            router.replace(safeNext);
+            return;
+          }
+        }
+
+        const apiError =
+          typeof payload.error === "string" && payload.error.length > 0
+            ? payload.error
+            : "This sign-in link is not valid.";
+        queueMicrotask(() => setError(apiError));
+      } catch {
+        if (process.env.NODE_ENV === "development") {
+          const fallback = verifyMagicLink(email, token);
+          if (fallback.ok) {
+            router.replace(safeNext);
+            return;
+          }
+        }
+        queueMicrotask(() =>
+          setError("Unable to verify this link right now. Please try again."),
+        );
+      }
+    };
+
+    void run();
   }, [router, searchParams]);
 
   if (error) {

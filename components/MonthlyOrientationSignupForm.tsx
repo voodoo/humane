@@ -81,7 +81,7 @@ export function MonthlyOrientationSignupForm({ monthLabel }: Props) {
       <EmailSignIn
         embedded
         title="Sign in with email"
-        subtitle="Enter your email — no password. You’ll get a demo message with a link back to orientation signup."
+        subtitle="Enter your email — no password. We’ll send a secure link back to orientation signup."
         returnPath="/orientation/signup"
       />
     );

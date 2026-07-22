@@ -20,28 +20,6 @@ function safeNextPath(value: unknown): string {
 }
 
 export async function POST(request: Request) {
-  const resendKey = process.env.RESEND_API_KEY;
-  const fromEmail = process.env.RESEND_FROM_EMAIL;
-  const secret = process.env.MAGIC_LINK_SECRET;
-
-  const missing = [
-    !resendKey ? "RESEND_API_KEY" : null,
-    !fromEmail ? "RESEND_FROM_EMAIL" : null,
-    !secret ? "MAGIC_LINK_SECRET" : null,
-  ].filter(Boolean);
-
-  if (missing.length > 0) {
-    return Response.json(
-      {
-        error: `Missing required env vars: ${missing.join(", ")}`,
-      },
-      { status: 500 },
-    );
-  }
-  const resendKeyValue = resendKey as string;
-  const fromEmailValue = fromEmail as string;
-  const secretValue = secret as string;
-
   let body: MagicLinkRequest;
   try {
     body = (await request.json()) as MagicLinkRequest;
@@ -59,15 +37,24 @@ export async function POST(request: Request) {
   }
 
   const next = safeNextPath(body.next);
-  const token = createMagicLinkToken(email, secretValue);
+  const resendKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.RESEND_FROM_EMAIL;
+  const secret = process.env.MAGIC_LINK_SECRET;
+
+  if (!resendKey || !fromEmail || !secret) {
+    // Local/demo mode: client renders a clickable preview email and verifies locally.
+    return Response.json({ ok: true, mode: "demo" });
+  }
+
+  const token = createMagicLinkToken(email, secret);
   const verifyUrl = new URL("/auth/verify", request.url);
   verifyUrl.searchParams.set("email", email);
   verifyUrl.searchParams.set("token", token);
   verifyUrl.searchParams.set("next", next);
 
-  const resend = new Resend(resendKeyValue);
+  const resend = new Resend(resendKey);
   const { error } = await resend.emails.send({
-    from: fromEmailValue,
+    from: fromEmail,
     to: [email],
     subject: "Your Humane Society sign-in link",
     html: [

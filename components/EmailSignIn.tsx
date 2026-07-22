@@ -59,9 +59,18 @@ export function EmailSignIn({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: normalized, next: returnPath }),
       });
-      const payload = (await response.json()) as { error?: string };
+      const payload = (await response.json()) as {
+        error?: string;
+        mode?: "demo";
+      };
 
       if (response.ok) {
+        if (payload.mode === "demo") {
+          const link = createMagicLink(normalized);
+          setPending(link);
+          setSentEmail(null);
+          return;
+        }
         setPending(null);
         setSentEmail(normalized);
         return;

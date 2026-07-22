@@ -17,8 +17,8 @@ export async function POST(request: Request) {
   const secret = process.env.MAGIC_LINK_SECRET;
   if (!secret) {
     return Response.json(
-      { error: "Missing required env var: MAGIC_LINK_SECRET" },
-      { status: 500 },
+      { error: "Server-side link verification is unavailable." },
+      { status: 503 },
     );
   }
 

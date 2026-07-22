@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
-:root {
+:root,
+[data-theme="spring"] {
+  color-scheme: light;
   --background: #e8e6e1;
   --background-elevated: #f3f1ec;
   --foreground: #1f2a24;
@@ -12,6 +14,71 @@
   --danger: #8b3a3a;
   --font-display: var(--font-fraunces);
   --font-body: var(--font-source-sans);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --background: #fafaf8;
+  --background-elevated: #ffffff;
+  --foreground: #1f2a24;
+  --muted: #5c6b62;
+  --accent: #3d6b4f;
+  --accent-soft: #e3ece7;
+  --accent-deep: #2a4a38;
+  --border: #d8d5cf;
+  --danger: #8b3a3a;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #151917;
+  --background-elevated: #1e2420;
+  --foreground: #e6e4de;
+  --muted: #9aa89f;
+  --accent: #47855f;
+  --accent-soft: #2a3a30;
+  --accent-deep: #a8c9b2;
+  --border: #333a35;
+  --danger: #c06666;
+}
+
+[data-theme="winter"] {
+  color-scheme: light;
+  --background: #e9eef3;
+  --background-elevated: #f5f8fb;
+  --foreground: #1d2733;
+  --muted: #54657a;
+  --accent: #2f5f8a;
+  --accent-soft: #d7e4ef;
+  --accent-deep: #21445f;
+  --border: #c3cdd8;
+  --danger: #8b3a3a;
+}
+
+[data-theme="summer"] {
+  color-scheme: light;
+  --background: #fdf3df;
+  --background-elevated: #fffaf0;
+  --foreground: #2e2a20;
+  --muted: #6f6752;
+  --accent: #b25a13;
+  --accent-soft: #f7e3c2;
+  --accent-deep: #8f5112;
+  --border: #e6d8bd;
+  --danger: #8b3a3a;
+}
+
+[data-theme="fall"] {
+  color-scheme: light;
+  --background: #f2e6dd;
+  --background-elevated: #f9f0e9;
+  --foreground: #2c2019;
+  --muted: #71584a;
+  --accent: #8f4a2b;
+  --accent-soft: #ecd5c6;
+  --accent-deep: #6b3520;
+  --border: #d9c6b8;
+  --danger: #8b3a3a;
 }
 
 @theme inline {
@@ -32,17 +99,18 @@ body {
   background-image:
     radial-gradient(
       ellipse 120% 80% at 10% -10%,
-      rgba(61, 107, 79, 0.12),
+      color-mix(in srgb, var(--accent) 13%, transparent),
       transparent 55%
     ),
     radial-gradient(
       ellipse 90% 60% at 100% 0%,
-      rgba(31, 42, 36, 0.06),
+      color-mix(in srgb, var(--foreground) 7%, transparent),
       transparent 50%
     ),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
   color: var(--foreground);
   font-family: var(--font-body), system-ui, sans-serif;
+  transition: background-color 200ms ease, color 200ms ease;
 }
 
 .font-display {

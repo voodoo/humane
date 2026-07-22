@@ -30,7 +30,14 @@ export default function RootLayout({
       lang="en"
       className={`${fraunces.variable} ${sourceSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem("humane-theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}`,
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

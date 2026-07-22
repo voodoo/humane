@@ -144,53 +144,55 @@ export function VolunteerApp() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-8 sm:px-6 sm:py-10">
+    <div className="flex flex-1 flex-col">
       <SiteNav />
-      <header className="mb-6 sm:mb-8">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h1 className="font-display text-4xl leading-tight tracking-tight text-foreground sm:text-5xl">
-              Humane Society
-            </h1>
-            <p className="mt-2 max-w-md text-base text-muted sm:text-lg">
-              Volunteer shifts
-            </p>
-            {welcomeName ? (
-              <p className="mt-1 text-sm text-accent-deep">
-                Signed in as {welcomeName}
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-8 sm:px-6 sm:py-10">
+        <header className="mb-6 sm:mb-8">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h1 className="font-display text-4xl leading-tight tracking-tight text-foreground sm:text-5xl">
+                Humane Society
+              </h1>
+              <p className="mt-2 max-w-md text-base text-muted sm:text-lg">
+                Volunteer shifts
               </p>
-            ) : null}
+              {welcomeName ? (
+                <p className="mt-1 text-sm text-accent-deep">
+                  Signed in as {welcomeName}
+                </p>
+              ) : null}
+            </div>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="rounded-md border border-border px-3 py-1.5 text-sm font-medium text-muted transition hover:border-accent hover:text-accent-deep"
+            >
+              Sign out
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={handleSignOut}
-            className="rounded-md border border-border px-3 py-1.5 text-sm font-medium text-muted transition hover:border-accent hover:text-accent-deep"
-          >
-            Sign out
-          </button>
-        </div>
-      </header>
+        </header>
 
-      <div className="grid flex-1 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(300px,0.95fr)] lg:items-start">
-        <MonthCalendar
-          month={month}
-          selectedISO={selectedISO}
-          counts={counts}
-          onPrev={() => handleMonthChange(addMonths(month, -1))}
-          onNext={() => handleMonthChange(addMonths(month, 1))}
-          onSelectDay={handleSelectDay}
-        />
-        <DayShiftPanel
-          phase={phase}
-          selectedISO={selectedISO}
-          shiftsForDay={shiftsForDay}
-          selectedShift={selectedShift}
-          demoVolunteer={volunteer}
-          onSelectShift={handleSelectShift}
-          onSubmitSignup={handleSubmitSignup}
-          onCancelSignup={handleCancelSignup}
-          onDone={handleDone}
-        />
+        <div className="grid flex-1 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(300px,0.95fr)] lg:items-start">
+          <MonthCalendar
+            month={month}
+            selectedISO={selectedISO}
+            counts={counts}
+            onPrev={() => handleMonthChange(addMonths(month, -1))}
+            onNext={() => handleMonthChange(addMonths(month, 1))}
+            onSelectDay={handleSelectDay}
+          />
+          <DayShiftPanel
+            phase={phase}
+            selectedISO={selectedISO}
+            shiftsForDay={shiftsForDay}
+            selectedShift={selectedShift}
+            demoVolunteer={volunteer}
+            onSelectShift={handleSelectShift}
+            onSubmitSignup={handleSubmitSignup}
+            onCancelSignup={handleCancelSignup}
+            onDone={handleDone}
+          />
+        </div>
       </div>
     </div>
   );

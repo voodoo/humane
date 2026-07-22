@@ -123,21 +123,24 @@ export function AdminSignupRecords() {
 
   if (!session) {
     return (
-      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-8 sm:px-6 sm:py-10">
+      <div className="flex flex-1 flex-col">
         <SiteNav />
-        <EmailSignIn
-          embedded
-          title="Sign in to admin"
-          subtitle="Use your volunteer email sign-in to access local signup records."
-          returnPath="/admin"
-        />
+        <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-8 sm:px-6 sm:py-10">
+          <EmailSignIn
+            embedded
+            title="Sign in to admin"
+            subtitle="Use your volunteer email sign-in to access local signup records."
+            returnPath="/admin"
+          />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-8 sm:px-6 sm:py-10">
+    <div className="flex flex-1 flex-col">
       <SiteNav />
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-8 sm:px-6 sm:py-10">
       <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="font-display text-4xl leading-tight tracking-tight text-foreground sm:text-5xl">
@@ -406,6 +409,7 @@ export function AdminSignupRecords() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

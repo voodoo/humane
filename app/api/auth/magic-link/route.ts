@@ -79,5 +79,10 @@ export async function POST(request: Request) {
     );
   }
 
-  return Response.json({ ok: true });
+  // Also return the verify URL so the client can show an in-app copy of the email.
+  return Response.json({
+    ok: true,
+    previewUrl: verifyUrl.toString(),
+    fromEmail: config.fromEmail,
+  });
 }

@@ -26,6 +26,8 @@ export function EmailSignIn({
   const [email, setEmail] = useState("");
   const [pending, setPending] = useState<PendingMagicLink | null>(null);
   const [sentEmail, setSentEmail] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [fromEmail, setFromEmail] = useState("volunteers@humanesociety.demo");
   const [hasSavedProfile, setHasSavedProfile] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
@@ -62,6 +64,8 @@ export function EmailSignIn({
       const payload = (await response.json()) as {
         error?: string;
         mode?: "demo";
+        previewUrl?: string;
+        fromEmail?: string;
       };
 
       if (response.ok) {
@@ -69,10 +73,20 @@ export function EmailSignIn({
           const link = createMagicLink(normalized);
           setPending(link);
           setSentEmail(null);
+          setPreviewUrl(null);
+          setFromEmail("volunteers@humanesociety.demo");
           return;
         }
         setPending(null);
         setSentEmail(normalized);
+        setPreviewUrl(
+          typeof payload.previewUrl === "string" ? payload.previewUrl : null,
+        );
+        setFromEmail(
+          typeof payload.fromEmail === "string" && payload.fromEmail.length > 0
+            ? payload.fromEmail
+            : "volunteers@humanesociety.demo",
+        );
         return;
       }
 
@@ -85,6 +99,8 @@ export function EmailSignIn({
         const link = createMagicLink(normalized);
         setPending(link);
         setSentEmail(null);
+        setPreviewUrl(null);
+        setFromEmail("volunteers@humanesociety.demo");
         setSendError(`${apiError} Showing local preview link in development.`);
         return;
       }
@@ -95,6 +111,8 @@ export function EmailSignIn({
         const link = createMagicLink(normalized);
         setPending(link);
         setSentEmail(null);
+        setPreviewUrl(null);
+        setFromEmail("volunteers@humanesociety.demo");
         setSendError("Email API unavailable. Showing local preview link in development.");
         return;
       }
@@ -117,7 +135,8 @@ export function EmailSignIn({
     const targetEmail = sentEmail ?? pending?.email ?? "";
     const href = pending
       ? `${magicLinkHref(pending)}&next=${encodeURIComponent(returnPath)}`
-      : null;
+      : previewUrl;
+    const isDemoPreview = Boolean(pending);
 
     return shell(
       <div className="rounded-lg border border-border bg-background-elevated p-5 shadow-sm sm:p-6">
@@ -128,29 +147,34 @@ export function EmailSignIn({
           Open the link we sent
         </h1>
         <p className="mt-2 text-sm text-muted">
-          {pending
+          {isDemoPreview
             ? "Email delivery failed in development. Use the preview message below to continue."
-            : "We sent a secure sign-in link to "}
-          {!pending ? <strong className="text-foreground">{targetEmail}</strong> : null}
-          {hasSavedProfile
-            ? " with your saved volunteer details."
-            : "."}
+            : (
+              <>
+                We sent a secure sign-in link to{" "}
+                <strong className="text-foreground">{targetEmail}</strong>
+                {hasSavedProfile
+                  ? " with your saved volunteer details"
+                  : ""}
+                . A copy is below so you can continue in the app.
+              </>
+            )}
         </p>
 
-        {pending && href ? (
+        {href ? (
           <article
             className="mt-6 rounded-md border border-border bg-background"
-            aria-label="Demo sign-in email"
+            aria-label={
+              isDemoPreview ? "Demo sign-in email" : "Copy of sign-in email"
+            }
           >
             <header className="border-b border-border px-4 py-3 text-sm">
               <p className="text-muted">
                 From{" "}
-                <span className="text-foreground">
-                  volunteers@humanesociety.demo
-                </span>
+                <span className="text-foreground">{fromEmail}</span>
               </p>
               <p className="text-muted">
-                To <span className="text-foreground">{pending.email}</span>
+                To <span className="text-foreground">{targetEmail}</span>
               </p>
               <p className="mt-1 font-medium text-foreground">
                 Your Humane Society sign-in link
@@ -188,6 +212,7 @@ export function EmailSignIn({
           onClick={() => {
             setPending(null);
             setSentEmail(null);
+            setPreviewUrl(null);
             setSendError(null);
             setEmail(targetEmail);
           }}

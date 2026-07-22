@@ -10,6 +10,31 @@ type VerifyApiPayload = {
   error?: string;
 };
 
+function readParam(
+  searchParams: { get: (name: string) => string | null },
+  keys: readonly string[],
+): string | null {
+  for (const key of keys) {
+    const value = searchParams.get(key);
+    if (value) return value;
+  }
+  return null;
+}
+
+function normalizeEmailFromQuery(value: string): string {
+  const trimmed = value.trim().toLowerCase();
+  if (!trimmed.includes("@")) return trimmed;
+  // Some old/shared links decode "+" aliases as spaces.
+  return trimmed.replace(/ /g, "+");
+}
+
+function isLikelyLocalDemoToken(token: string): boolean {
+  if (token.startsWith("demo_")) return true;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    token,
+  );
+}
+
 function verifyLocally(email: string, token: string): boolean {
   const fallback = verifyMagicLink(email, token);
   return fallback.ok;
@@ -34,15 +59,23 @@ function VerifyInner() {
     ran.current = true;
 
     const run = async () => {
-      const email = searchParams.get("email");
-      const token = searchParams.get("token");
-      const next = searchParams.get("next") || "/";
+      const emailRaw = readParam(searchParams, ["email", "e"]);
+      const token = readParam(searchParams, ["token", "t", "code"]);
+      const email = emailRaw ? normalizeEmailFromQuery(emailRaw) : null;
+      const next = readParam(searchParams, ["next", "redirect"]) || "/";
       const safeNext =
         next.startsWith("/") && !next.startsWith("//") ? next : "/";
 
       if (!email || !token) {
         queueMicrotask(() => setError("This sign-in link is missing details."));
         return;
+      }
+
+      if (isLikelyLocalDemoToken(token)) {
+        if (verifyLocally(email, token)) {
+          router.replace(safeNext);
+          return;
+        }
       }
 
       try {

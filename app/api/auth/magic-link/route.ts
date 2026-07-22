@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { createMagicLinkToken } from "@/lib/magic-link-token";
+import { getServerMagicLinkConfig } from "@/lib/magic-link-config";
 
 type MagicLinkRequest = {
   email?: unknown;
@@ -37,24 +38,22 @@ export async function POST(request: Request) {
   }
 
   const next = safeNextPath(body.next);
-  const resendKey = process.env.RESEND_API_KEY;
-  const fromEmail = process.env.RESEND_FROM_EMAIL;
-  const secret = process.env.MAGIC_LINK_SECRET;
+  const config = getServerMagicLinkConfig();
 
-  if (!resendKey || !fromEmail || !secret) {
+  if (!config) {
     // Local/demo mode: client renders a clickable preview email and verifies locally.
     return Response.json({ ok: true, mode: "demo" });
   }
 
-  const token = createMagicLinkToken(email, secret);
+  const token = createMagicLinkToken(email, config.secret);
   const verifyUrl = new URL("/auth/verify", request.url);
   verifyUrl.searchParams.set("email", email);
   verifyUrl.searchParams.set("token", token);
   verifyUrl.searchParams.set("next", next);
 
-  const resend = new Resend(resendKey);
+  const resend = new Resend(config.resendKey);
   const { error } = await resend.emails.send({
-    from: fromEmail,
+    from: config.fromEmail,
     to: [email],
     subject: "Your Humane Society sign-in link",
     html: [

@@ -115,7 +115,7 @@ export function createMagicLink(email: string): PendingMagicLink {
   const normalized = email.trim().toLowerCase();
   const pending: PendingMagicLink = {
     email: normalized,
-    token: crypto.randomUUID(),
+    token: `demo_${crypto.randomUUID()}`,
     createdAt: Date.now(),
   };
   writeJson(PENDING_LINK_KEY, pending);

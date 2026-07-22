@@ -1,4 +1,5 @@
 import { verifyMagicLinkToken } from "@/lib/magic-link-token";
+import { getServerMagicLinkConfig } from "@/lib/magic-link-config";
 
 type VerifyRequest = {
   email?: unknown;
@@ -14,8 +15,8 @@ function isValidEmail(value: string): boolean {
 }
 
 export async function POST(request: Request) {
-  const secret = process.env.MAGIC_LINK_SECRET;
-  if (!secret) {
+  const config = getServerMagicLinkConfig();
+  if (!config) {
     return Response.json(
       { error: "Server-side link verification is unavailable." },
       { status: 503 },
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "Enter a valid email address." }, { status: 400 });
   }
 
-  const verification = verifyMagicLinkToken(body.token, email, secret);
+  const verification = verifyMagicLinkToken(body.token, email, config.secret);
   if (!verification.ok) {
     return Response.json({ error: verification.error }, { status: 401 });
   }

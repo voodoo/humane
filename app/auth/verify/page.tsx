@@ -5,6 +5,24 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { completeMagicLinkSignIn, verifyMagicLink } from "@/lib/local-volunteer";
 
+type VerifyApiPayload = {
+  email?: string;
+  error?: string;
+};
+
+function verifyLocally(email: string, token: string): boolean {
+  const fallback = verifyMagicLink(email, token);
+  return fallback.ok;
+}
+
+function shouldUseLocalFallback(
+  response: Response,
+  payload: VerifyApiPayload,
+): boolean {
+  if (response.status === 503) return true;
+  return payload.error === "Server-side link verification is unavailable.";
+}
+
 function VerifyInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -33,10 +51,7 @@ function VerifyInner() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, token }),
         });
-        const payload = (await response.json()) as {
-          email?: string;
-          error?: string;
-        };
+        const payload = (await response.json()) as VerifyApiPayload;
 
         if (response.ok && typeof payload.email === "string") {
           completeMagicLinkSignIn(payload.email);
@@ -44,9 +59,8 @@ function VerifyInner() {
           return;
         }
 
-        if (process.env.NODE_ENV === "development") {
-          const fallback = verifyMagicLink(email, token);
-          if (fallback.ok) {
+        if (shouldUseLocalFallback(response, payload)) {
+          if (verifyLocally(email, token)) {
             router.replace(safeNext);
             return;
           }
@@ -58,12 +72,9 @@ function VerifyInner() {
             : "This sign-in link is not valid.";
         queueMicrotask(() => setError(apiError));
       } catch {
-        if (process.env.NODE_ENV === "development") {
-          const fallback = verifyMagicLink(email, token);
-          if (fallback.ok) {
-            router.replace(safeNext);
-            return;
-          }
+        if (verifyLocally(email, token)) {
+          router.replace(safeNext);
+          return;
         }
         queueMicrotask(() =>
           setError("Unable to verify this link right now. Please try again."),

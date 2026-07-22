@@ -1,19 +1,36 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { loadSession } from "@/lib/local-volunteer";
 
 const links = [
-  { href: "/admin", label: "Admin" },
+  { href: "/admin", label: "Admin", adminOnly: true },
   { href: "/orientation/signup", label: "Orientation form" },
   { href: "/orientation", label: "Start orientation" },
   { href: "/", label: "Shifts" },
   { href: "/donate", label: "Donate" },
   { href: "/screening", label: "Background check" },
-];
+] as const;
+
+function isAdminEmail(email: string | undefined): boolean {
+  return Boolean(email?.trim().toLowerCase().startsWith("admin"));
+}
 
 export function SiteNav() {
   const pathname = usePathname();
+  const [showAdmin, setShowAdmin] = useState(false);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      setShowAdmin(isAdminEmail(loadSession()?.email));
+    });
+  }, [pathname]);
+
+  const visibleLinks = links.filter(
+    (link) => !("adminOnly" in link && link.adminOnly) || showAdmin,
+  );
 
   return (
     <nav
@@ -22,7 +39,7 @@ export function SiteNav() {
     >
       <div className="mx-auto w-full max-w-6xl overflow-x-auto px-2 sm:px-4">
         <ul className="flex w-max min-w-full gap-1 py-1.5 sm:w-full">
-          {links.map((link) => {
+          {visibleLinks.map((link) => {
             const active =
               link.href === "/"
                 ? pathname === "/"

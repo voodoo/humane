@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { SiteNav } from "@/components/SiteNav";
 import { MonthlyOrientationSignupForm } from "@/components/MonthlyOrientationSignupForm";
 import { formatMonthLabel, startOfMonth } from "@/lib/calendar";
 
@@ -13,30 +11,5 @@ export const metadata: Metadata = {
 export default function OrientationSignupPage() {
   const monthLabel = formatMonthLabel(startOfMonth(new Date()));
 
-  return (
-    <div className="flex flex-1 flex-col">
-      <SiteNav />
-      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-8 sm:px-6 sm:py-10">
-        <div className="mx-auto w-full max-w-xl">
-          <p className="mb-4">
-            <Link
-              href="/orientation"
-              className="text-sm font-medium text-accent underline-offset-2 hover:underline"
-            >
-              ← Start of this process
-            </Link>
-          </p>
-          <header className="mb-6">
-            <h1 className="font-display text-3xl leading-tight tracking-tight text-foreground sm:text-4xl">
-              Orientation signup
-            </h1>
-            <p className="mt-2 text-muted">
-              One form for {monthLabel}
-            </p>
-          </header>
-          <MonthlyOrientationSignupForm monthLabel={monthLabel} />
-        </div>
-      </div>
-    </div>
-  );
+  return <MonthlyOrientationSignupForm monthLabel={monthLabel} />;
 }
